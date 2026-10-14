@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#142d2a">
+<meta name="description" content="物遇 WUYU 商家工作台 MVP：商品手册、黄金定制报价、客户询价管理。">
+<title>物遇 WUYU｜商家工作台</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-top">
+  <a class="brand" href="../index.html"><span class="brand-mark">遇</span><span>物遇 WUYU<small>MERCHANT WORKSPACE</small></span></a>
+  <div class="top-right"><span class="mode-chip">MVP · 本机试用版</span><a class="web-link" href="../index.html">返回品牌官网 ↗</a></div>
+</header>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="nav-label">WORKSPACE</div>
+    <nav class="nav-list" aria-label="工作台导航">
+      <button class="nav-item active" data-view="dashboard"><span class="ico">▦</span>经营概览</button>
+      <button class="nav-item" data-view="quote"><span class="ico">⌗</span>报价计算</button>
+      <button class="nav-item" data-view="products"><span class="ico">◇</span>商品手册</button>
+      <button class="nav-item" data-view="inquiries"><span class="ico">☷</span>客户询价</button>
+      <button class="nav-item" data-view="settings"><span class="ico">⚙</span>商家设置</button>
+    </nav>
+    <div class="side-card"><strong>先把重复工作变简单</strong><p>从商品整理、手动核价与客户跟进开始。数据暂存在当前浏览器，换设备不会自动同步。</p><div class="tiny">接口预留中 · 实时金价未连接</div></div>
+  </aside>
+  <main class="main">
+    <div class="demo-banner"><span>✳</span><div><b>试用版提示：</b>商品和询价可能包含演示样例，数据仅保存在当前浏览器。本版尚未连接实时金价、云端数据库和多设备同步；生成报价前请自行核对金价与工费。</div></div>
+    <div id="viewContainer" aria-live="polite"></div>
+    <div class="footnote">物遇 WUYU · 商家工作台 MVP · 当前报价仅供业务辅助，不构成实时报价保证。请以商家确认的价格和条款为准。</div>
+  </main>
+</div>
+<div id="modalRoot"></div><div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="../js/app-config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
