@@ -1,20 +1,16 @@
-# 物遇 WUYU 品牌官网
+# 物遇 WUYU 品牌官网与商家工作台
 
-这是一个响应式单页品牌网站，使用原生 HTML/CSS/JavaScript，可直接通过 GitHub Pages 发布。
+- 品牌官网： https://chenzhe223-tech.github.io/wuyu-brand-site/
+- 商家工作台 MVP： https://chenzhe223-tech.github.io/wuyu-brand-site/merchant/
+- 商家工作台产品规格： `merchant/PRODUCT_SPEC.md`
+- 商家工作台 API 草案： `merchant/API_CONTRACT.md`
+- 官网 API 预留说明： `API.md`
 
-## 文件结构
-- `index.html`：品牌介绍、功能规划、品牌色彩，以及显眼的应用入口。
-- `js/app-config.js`：应用入口与 API 基地址配置。
-- `js/api-client.js`：统一的 API 请求适配层。
-- `API.md`：预留接口清单、契约建议和安全约束。
-- `.github/workflows/pages.yml`：推送到 `main` 后自动部署到 GitHub Pages。
+## 商家工作台 MVP 已包含
+经营概览、商品手册增删改查、手动黄金报价计算、报价快照、报价文本复制与 TXT 下载、客户询价管理、跟进状态、店铺默认设置、本机 JSON 数据备份/恢复及响应式移动布局。
 
-## GitHub Pages 发布
-1. 仓库 Settings → Pages → Build and deployment → Source 选择 **GitHub Actions**。
-2. 向 `main` 提交代码后，打开 Actions 检查 “Deploy WUYU website to GitHub Pages”。
-3. 成功后，可在部署任务的 `github-pages` 环境中打开网站链接。默认预期地址为 `https://chenzhe223-tech.github.io/wuyu-brand-site/`。
+## 当前限制
+这是可交互 MVP，不是完整商用系统。数据保存在当前浏览器 localStorage，清理浏览器数据或换设备不会自动同步。金价需手动录入，未连接实时金价、账号、云端数据库、AI 识款、支付及物流。首次打开商家工作台会创建明确标识的示例商品与询价，可编辑或删除。
 
-## API 当前状态
-API 适配层已预留，但后端未部署，`API_BASE_URL` 默认为空。页面不会伪造金价或报价。不要在静态前端放 API Key、数据库密码或其他私密凭证；需要密钥的数据源必须通过后端代理访问。
-
-当前尚未接入实时金价、AI 识款、账号、商家匹配、交易、支付或物流服务。品牌名称为提案，商标与域名可用性尚未核验。
+## 部署
+GitHub Pages 通过 `.github/workflows/pages.yml` 在 main 更新后自动部署。部署完成后访问上方网址。
