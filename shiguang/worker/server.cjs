@@ -111,24 +111,47 @@ const server = http.createServer(async (req, res) => {
     "\n心情标签：" + (moods.join("、") || "未填写") + "\n生活记录：\n" + record +
     "\n\n请只输出严格 JSON 对象，不要 Markdown 代码块。格式为 {\"title\":\"不超过16字的诗题\",\"poem\":\"诗歌正文，换行使用\\\\n\"}。";
 
+  const requestModel = async (model) => fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+    method: "POST",
+    headers: { "Authorization": "Bearer " + process.env.BIGMODEL_API_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: "你是「拾光 SHIGUANG」的专属诗歌创作者。品牌内核：拾起时光，留住人间。尊重用户真实记忆，温柔、克制、有画面感。" },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.85,
+      top_p: 0.85,
+      max_tokens: 900,
+      stream: false
+    }),
+    signal: AbortSignal.timeout(45000)
+  });
+
   let upstream;
+  let activeModel = MODEL;
   try {
-    upstream = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-      method: "POST",
-      headers: { "Authorization": "Bearer " + process.env.BIGMODEL_API_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          { role: "system", content: "你是「拾光 SHIGUANG」的专属诗歌创作者。品牌内核：拾起时光，留住人间。尊重用户真实记忆，温柔、克制、有画面感。" },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.85,
-        top_p: 0.85,
-        max_tokens: 900,
-        stream: false
-      }),
-      signal: AbortSignal.timeout(45000)
-    });
+    upstream = await requestModel(MODEL);
+    if (upstream.status === 429) {
+      let firstMessage = "";
+      try {
+        const firstError = await upstream.clone().json();
+        const detail = firstError && firstError.error ? firstError.error : firstError;
+        firstMessage = String((detail && (detail.message || detail.msg)) || "");
+      } catch {}
+      if (/当前访问量过大|访问量过大|temporarily overloaded|model overloaded|too many requests/i.test(firstMessage)) {
+        const fallbackModel = "glm-4-flash-250414";
+        const fallbackResponse = await requestModel(fallbackModel);
+        if (fallbackResponse.ok) {
+          upstream = fallbackResponse;
+          activeModel = fallbackModel;
+          console.warn("Primary model busy; poem generation succeeded with fallback model", fallbackModel);
+        } else {
+          upstream = fallbackResponse;
+          activeModel = fallbackModel;
+        }
+      }
+    }
   } catch {
     sendJson(res, 502, { error: "暂时无法连接诗歌模型，请稍后重试。" });
     return;
@@ -162,6 +185,6 @@ const server = http.createServer(async (req, res) => {
   if (typeof answer !== "string" || !answer.trim()) { sendJson(res, 502, { error: "模型没有返回诗歌，请重试。" }); return; }
   const result = parsePoem(answer, title);
   if (!result.poem) { sendJson(res, 502, { error: "模型没有返回有效诗歌，请重试。" }); return; }
-  sendJson(res, 200, { title: result.title, poem: result.poem, model: payload.model || MODEL });
+  sendJson(res, 200, { title: result.title, poem: result.poem, model: payload.model || activeModel });
 });
 server.listen(PORT, "0.0.0.0", () => console.log("SHIGUANG poem API listening on port " + PORT));
