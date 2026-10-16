@@ -29,7 +29,7 @@ jobs:
             fi
             sleep 5
           done
-          node -e "const h=require('/tmp/health.json'); if(!h.ok || !h.keyConfigured) { console.error('Health check failed: API key is not configured or service is unhealthy.'); process.exit(1); } console.log('Health check passed; model='+h.model);"
+          node -e "const h=require('/tmp/health.json'); if(!h.ok || h.provider !== 'DeepSeek' || h.model !== 'deepseek-flash' || !h.keyConfigured) { console.error('DeepSeek health check failed. Confirm the new backend has deployed and DEEPSEEK_API_KEY is configured in Render.'); process.exit(1); } console.log('DeepSeek health check passed; model='+h.model);"
 
       - name: Generate one test poem through the live model
         env:
