@@ -135,9 +135,24 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (!upstream.ok) {
-    if (upstream.status === 401 || upstream.status === 403) sendJson(res, 502, { error: "模型密钥无效或没有调用权限，请检查后端密钥配置。" });
-    else if (upstream.status === 429) sendJson(res, 429, { error: "模型服务繁忙或额度不足，请稍后重试。" });
-    else sendJson(res, 502, { error: "模型暂时无法生成，请稍后重试。" });
+    let providerMessage = "";
+    let providerCode = "";
+    try {
+      const providerError = await upstream.json();
+      const detail = providerError && providerError.error ? providerError.error : providerError;
+      providerMessage = String((detail && (detail.message || detail.msg)) || "").slice(0, 220);
+      providerCode = String((detail && (detail.code || detail.type)) || "").slice(0, 40);
+    } catch {}
+    console.warn("BigModel API failure", JSON.stringify({ status: upstream.status, code: providerCode, message: providerMessage }));
+    if (upstream.status === 401 || upstream.status === 403) {
+      sendJson(res, 502, { error: "模型密钥无效或没有调用权限，请检查后端密钥配置。" });
+    } else if (upstream.status === 429) {
+      const detail = providerMessage ? " 模型服务提示：" + providerMessage : "";
+      sendJson(res, 429, { error: "模型服务繁忙、请求受限或账号可用额度不足，请稍后重试。" + detail });
+    } else {
+      const detail = providerMessage ? " 模型服务提示：" + providerMessage : "";
+      sendJson(res, 502, { error: "模型暂时无法生成，请稍后重试。" + detail });
+    }
     return;
   }
   let payload;
