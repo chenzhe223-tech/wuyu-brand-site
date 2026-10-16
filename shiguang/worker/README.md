@@ -1,40 +1,31 @@
-# SHIGUANG poem API
+# SHIGUANG AI poem API
 
-This Worker keeps the BigModel API key on the server and exposes a poem-generation endpoint for the static SHIGUANG site.
+## Current production setup
 
-## One-time Cloudflare setup
+The live app uses a Node API service on Render:
 
-The GitHub Actions deployment workflow is at `.github/workflows/deploy-shiguang-worker.yml`. To enable it:
+- App: https://chenzhe223-tech.github.io/wuyu-brand-site/shiguang/
+- API health: https://shiguang-ai-api.onrender.com/health
+- API endpoint: `POST https://shiguang-ai-api.onrender.com/api/poem`
+- Node entrypoint: `shiguang/worker/server.cjs`
+- Render service: https://dashboard.render.com/web/srv-db8og9ui0phs738eqjeg
 
-1. In Cloudflare Dashboard, create a Worker named `shiguang-ai-api` once if it does not already exist.
-2. Create a Cloudflare API token with permission to edit this Worker. Prefer scoping it to this Worker; do not grant account-wide Admin if it is not needed.
-3. In GitHub, open **Settings → Secrets and variables → Actions → New repository secret**, and add:
-   - `CLOUDFLARE_API_TOKEN`: the token created in Cloudflare.
-   - `CLOUDFLARE_ACCOUNT_ID`: the account ID shown in the Cloudflare dashboard.
-4. The Worker source in this folder will deploy automatically when files under `shiguang/worker/` change. You can also start it manually from the repository's **Actions** tab.
+The Render service is configured to run `node shiguang/worker/server.cjs`. It uses the `BIGMODEL_API_KEY` environment variable stored in Render's service settings; the secret value is not stored in this repository.
 
-If you prefer local deployment, run from the repository root:
+## Model behavior
 
-```bash
-npx wrangler login
-npx wrangler deploy --config shiguang/worker/wrangler.toml
-npx wrangler secret put BIGMODEL_API_KEY --config shiguang/worker/wrangler.toml
-```
+The API first tries `glm-4.7-flash`. If that model specifically reports temporary overload, it retries once with the free `glm-4-flash-250414` model. Other errors are reported instead of silently generating a template poem. Both models follow the same prompt and return editable poem title/content.
 
-## Configure the BigModel secret
+## Verify production
 
-After the first deploy, add a Worker secret named **`BIGMODEL_API_KEY`** through the Cloudflare Worker **Settings → Variables and Secrets** page, or use the Wrangler command above. Paste the key directly into Cloudflare or your local terminal prompt. Never put the value in source code, this repository, browser JavaScript, or this README. If a key has been shared publicly or in a chat, rotate it when practical.
+The GitHub Actions workflow `.github/workflows/smoke-test-shiguang-ai.yml` checks the live health endpoint and makes a real test request to the model. See [the workflow runs](https://github.com/chenzhe223-tech/wuyu-brand-site/actions/workflows/smoke-test-shiguang-ai.yml).
 
-## Verify
+## Data and privacy
 
-Open:
+The frontend sends only the user's record title, text, mood labels, and chosen style to the model API when they tap to generate a poem. Photo data is not included. Original records and photos remain in browser local storage unless the user exports them.
 
-`https://shiguang-ai-api.chenzhe223.workers.dev/health`
+The endpoint allows browser requests from `https://chenzhe223-tech.github.io` and applies a basic per-instance rate limit. CORS is not authentication; before promoting the app broadly, add a stronger abuse control such as Cloudflare Turnstile and/or a shared edge rate limit.
 
-The response should contain `"ok":true` and `"keyConfigured":true`.
+## Cloudflare Worker alternative
 
-The frontend sends only the record title, text, selected mood labels, and poem style to `POST /api/poem`. Photos are not included. Original records and photo data stay in browser local storage unless the user explicitly exports them. The API allows browser requests from `https://chenzhe223-tech.github.io`.
-
-## Before public promotion
-
-CORS limits browser origins but is not authentication. Before inviting broad public traffic, add abuse controls such as Cloudflare rate limiting and usage monitoring to protect the model quota. The Worker uses `glm-4.7-flash`, the current free Flash model listed in the official [BigModel documentation](https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash).
+`index.js` and `wrangler.toml` are retained as an alternative Worker implementation. They are not the currently active production API. The active API is the Render service above.
