@@ -1,5 +1,5 @@
 const ALLOWED_ORIGIN = "https://chenzhe223-tech.github.io";
-const MODEL = "glm-4.7-flash";
+const MODEL = "deepseek-flash";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -42,7 +42,7 @@ export default {
         ok: true,
         service: "shiguang-ai-api",
         model: MODEL,
-        keyConfigured: Boolean(env.BIGMODEL_API_KEY)
+        keyConfigured: Boolean(env.DEEPSEEK_API_KEY)
       });
     }
 
@@ -50,8 +50,8 @@ export default {
       return json({ error: "Not found" }, 404);
     }
 
-    if (!env.BIGMODEL_API_KEY) {
-      return json({ error: "AI 服务尚未配置密钥。请在 Cloudflare Worker 的 Secrets 中添加 BIGMODEL_API_KEY。" }, 503);
+    if (!env.DEEPSEEK_API_KEY) {
+      return json({ error: "DeepSeek 服务尚未配置密钥。请在 Cloudflare Worker 的 Secrets 中添加 DEEPSEEK_API_KEY。" }, 503);
     }
 
     let rawBody;
@@ -98,10 +98,10 @@ export default {
 
     let upstream;
     try {
-      upstream = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+      upstream = await fetch("https://api.deepseek.com/chat/completions", {
         method: "POST",
         headers: {
-          "Authorization": "Bearer " + env.BIGMODEL_API_KEY,
+          "Authorization": "Bearer " + env.DEEPSEEK_API_KEY,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -116,6 +116,7 @@ export default {
           temperature: 0.85,
           top_p: 0.85,
           thinking: { type: "disabled" },
+          response_format: { type: "json_object" },
           max_tokens: 900,
           stream: false
         })
@@ -126,12 +127,12 @@ export default {
 
     if (!upstream.ok) {
       if (upstream.status === 401 || upstream.status === 403) {
-        return json({ error: "模型密钥无效或没有调用权限，请检查 Cloudflare Secret 配置。" }, 502);
+        return json({ error: "DeepSeek API Key 无效或没有调用权限，请检查 Cloudflare Secret 配置。" }, 502);
       }
       if (upstream.status === 429) {
-        return json({ error: "模型服务繁忙或额度不足，请稍后重试。" }, 429);
+        return json({ error: "DeepSeek 服务繁忙或额度不足，请稍后重试。" }, 429);
       }
-      return json({ error: "模型暂时无法生成，请稍后重试。" }, 502);
+      return json({ error: "DeepSeek 暂时无法生成，请稍后重试。" }, 502);
     }
 
     let payload;
