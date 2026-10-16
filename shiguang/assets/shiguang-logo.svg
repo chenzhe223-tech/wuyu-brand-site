@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">拾光 SHIGUANG</title>
+  <desc id="desc">深靛紫夜空中的弯月、星辰、晚霞与植物，象征在平凡生活中拾起微光。</desc>
+  <defs>
+    <clipPath id="round"><rect width="128" height="128" rx="25"/></clipPath>
+  </defs>
+  <g clip-path="url(#round)">
+    <rect width="128" height="128" fill="#19172D"/>
+    <circle cx="68" cy="36" r="31" fill="#FFF8EF"/>
+    <circle cx="83" cy="25" r="28" fill="#19172D"/>
+    <path d="M105 10l3.8 8.2L118 22l-9.2 3.4L105 35l-3.5-9.6L92 22l9.5-3.8z" fill="#F2C66D"/>
+    <circle cx="24" cy="24" r="2" fill="#F2C66D"/>
+    <circle cx="38" cy="48" r="1.7" fill="#C6A8D8"/>
+    <path d="M0 85C18 71 31 71 48 82s28 15 43 4 24-13 37-19v61H0z" fill="#F27C63"/>
+    <path d="M0 98c18-12 35-8 51 2 17 10 27 13 43 4 13-7 23-8 34-4v28H0z" fill="#C6A8D8"/>
+    <path d="M0 109c20-9 37-5 55 3 17 8 36 6 49-2 9-5 16-5 24-3v21H0z" fill="#34345C"/>
+    <path d="M15 128c7-20 11-33 16-48" fill="none" stroke="#A9B99A" stroke-width="3.3" stroke-linecap="round"/>
+    <path d="M27 95C11 93 7 83 9 75c12 1 21 8 18 20z" fill="#A9B99A"/>
+    <path d="M29 88c-1-15 7-24 18-26 3 12-5 23-18 26z" fill="#A9B99A"/>
+    <path d="M16 111C3 108-2 98 2 90c11 4 17 11 14 21z" fill="#789477"/>
+    <path d="M35 113c8-11 19-13 29-8-4 10-15 14-29 8z" fill="#F2C66D"/>
+    <path d="M58 82c8 2 15 5 23 10" stroke="#FFF8EF" stroke-opacity=".85" stroke-width="1.5" fill="none"/>
+  </g>
+</svg>
