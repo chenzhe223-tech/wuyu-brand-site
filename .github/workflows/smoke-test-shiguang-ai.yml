@@ -15,6 +15,12 @@ jobs:
   smoke-test:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate DeepSeek backend syntax
+        run: node --check shiguang/worker/server.cjs
+
       - name: Wait for API and verify health
         env:
           API_BASE: https://shiguang-ai-api.onrender.com
