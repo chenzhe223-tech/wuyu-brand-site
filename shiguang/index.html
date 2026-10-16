@@ -30,8 +30,9 @@ body{background:#fff8ef;color:#27223b}
 .bottom{background:#fff8efee;border-top-color:#eaded2}.bottom button{color:#7f7887}.bottom .add{background:linear-gradient(135deg,#f2c66d,#f27c63 55%,#c6a8d8);border:0;color:#fff8ef;box-shadow:0 4px 12px #b85f4b30}
 .toast{background:#27223b;color:#fff8ef;border:1px solid #f2c66d55;border-radius:10px}
 @media(max-width:650px){.hero:after{right:-70px;top:17%;width:190px;height:190px}.hero{background:radial-gradient(ellipse at 80% 32%,#68476f 0,#3a2b50 26%,#25213f 51%,#19172d 78%)}}
+.brand-logo{width:34px;height:34px;display:block;object-fit:cover;border-radius:9px;box-shadow:0 4px 12px #19172d20;flex:0 0 auto}
 </style></head><body>
-<header class="top"><button class="brand" id="home"><span class="logo">✦</span><span><b>拾光</b><small>SHIGUANG</small></span></button><span class="save" id="saveState">● 仅保存在此设备</span></header>
+<header class="top"><button class="brand" id="home"><img class="brand-logo" src="./assets/shiguang-logo.svg" alt="拾光 SHIGUANG" width="29" height="29"><span><b>拾光</b><small>SHIGUANG</small></span></button><span class="save" id="saveState">● 仅保存在此设备</span></header>
 <main>
 <section id="homeView" class="view active" style="padding:0">
 <div class="hero"><div class="orbit"></div><div class="stars" id="stars"></div><p class="eyebrow">✧ YOUR PERSONAL UNIVERSE</p><h1>每一段时光，<br><em>都曾发光。</em></h1><p class="sub" id="subtitle">这里还很安静。你的故事，可以从今天开始。</p><button class="cta" id="newMemory">✦　拾起今天的一束光 <span>↗</span></button><div class="stats" id="stats">0 颗星辰　·　时间正在等待被收藏</div></div>
