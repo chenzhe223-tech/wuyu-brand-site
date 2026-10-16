@@ -8,7 +8,7 @@
 - Node entrypoint: `shiguang/worker/server.cjs`
 - Render service: https://dashboard.render.com/web/srv-db8og9ui0phs738eqjeg
 
-The active production backend runs on Render and calls the official DeepSeek Chat Completions endpoint. The model is `deepseek-flash`; the API key is read only from the server-side environment variable `DEEPSEEK_API_KEY`. Never put the key in browser JavaScript or this repository.
+The Render backend source has been migrated to the official DeepSeek Chat Completions endpoint. The target model is `deepseek-flash`, with its key read only from the server-side environment variable `DEEPSEEK_API_KEY`. The live Render deployment is not switched yet: configure the new key first, then redeploy and pass the smoke test. Never put the key in browser JavaScript or this repository.
 
 ## One required provider setup
 
@@ -19,7 +19,7 @@ Add `DEEPSEEK_API_KEY` as an environment variable in Render:
 3. Add `DEEPSEEK_API_KEY` with the API key created in the [DeepSeek Platform](https://platform.deepseek.com/).
 4. Save changes and let Render redeploy the service.
 
-The previous `BIGMODEL_API_KEY` is not used by the new backend implementation. It is intentionally not copied into the new setting because it is a different provider's credential.
+The previous `BIGMODEL_API_KEY` is not used by the new backend source. It has not been copied into the new setting because it is a different provider's credential. Until DeepSeek is configured and redeployed, the live service may still report the previous provider.
 
 ## Model behavior
 
@@ -31,7 +31,7 @@ Official references:
 
 ## Verification
 
-The GitHub Actions workflow `.github/workflows/smoke-test-shiguang-ai.yml` checks the live health endpoint and attempts a real model call. The health response reports `keyConfigured: false` until `DEEPSEEK_API_KEY` has been added to Render.
+The GitHub Actions workflow `.github/workflows/smoke-test-shiguang-ai.yml` checks that the live health endpoint identifies DeepSeek and then makes a real model call. The latest check correctly failed because the live service has not yet switched and the DeepSeek key is not configured.
 
 ## Data and privacy
 
