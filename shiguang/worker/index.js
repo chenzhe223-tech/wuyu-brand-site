@@ -94,7 +94,7 @@ export default {
       "\n记录标题：" + (title || "无") +
       "\n心情标签：" + (moods.join("、") || "未填写") +
       "\n生活记录：\n" + record +
-      "\n\n请只输出严格 JSON 对象，不要 Markdown 代码块。格式为 {\"title\":\"不超过16字的诗题\",\"poem\":\"诗歌正文，换行使用\\\\n\"}。";
+      "\n\n请只输出严格 JSON 对象，不要 Markdown 代码块。格式为 {\"title\":\"不超过16字的诗题\",\"poem\":\"诗歌正文，换行使用标准 JSON 转义符\\n\"}。";
 
     let upstream;
     try {
@@ -115,6 +115,7 @@ export default {
           ],
           temperature: 0.85,
           top_p: 0.85,
+          thinking: { type: "disabled" },
           max_tokens: 900,
           stream: false
         })
