@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - "shiguang/worker/**"
+      - "shiguang/worker/index.js"
+      - "shiguang/worker/wrangler.toml"
       - ".github/workflows/deploy-shiguang-worker.yml"
   workflow_dispatch:
 
