@@ -21,6 +21,14 @@ jobs:
       - name: Validate DeepSeek backend syntax
         run: node --check shiguang/worker/server.cjs
 
+      - name: Verify the short app URL serves SHIGUANG
+        env:
+          APP_URL: https://shiguang-ai-api.onrender.com/
+        run: |
+          curl --silent --show-error --fail "$APP_URL" -o /tmp/shiguang.html
+          grep -q "拾光 SHIGUANG" /tmp/shiguang.html
+          echo "Short app URL serves SHIGUANG HTML."
+
       - name: Wait for API and verify health
         env:
           API_BASE: https://shiguang-ai-api.onrender.com
