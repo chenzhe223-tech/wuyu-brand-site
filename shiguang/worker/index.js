@@ -41,6 +41,7 @@ export default {
       return json({
         ok: true,
         service: "shiguang-ai-api",
+        provider: "DeepSeek",
         model: MODEL,
         keyConfigured: Boolean(env.DEEPSEEK_API_KEY)
       });
