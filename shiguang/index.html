@@ -78,7 +78,8 @@ async function remake(){
   }catch(error){
     $('poemTitle').value='';
     $('poemBody').value='';
-    toast(error.message||'AI 服务暂未连接，请稍后重试。');
+    const errorMessage=error&&error.message?error.message:'';
+    toast(errorMessage==='Failed to fetch'||errorMessage==='Load failed'?'AI 服务尚未部署或暂时无法连接，请稍后重试。':(errorMessage||'AI 服务暂未连接，请稍后重试。'));
   }finally{
     poemBusy=false; redo.disabled=false; save.disabled=false; styleButtons.forEach(b=>b.disabled=false);
   }
