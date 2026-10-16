@@ -72,7 +72,7 @@ async function remake(){
     const payload=await response.json();
     if(!response.ok)throw new Error(payload.error||'诗歌生成失败，请稍后重试。');
     if(!payload.poem)throw new Error('模型没有返回有效诗歌，请重试。');
-    pending={id:'p_'+Date.now().toString(36),title:payload.title||m.title||'拾光',text:payload.poem,style,createdAt:new Date().toISOString(),model:payload.model||'glm-4-flash'};
+    pending={id:'p_'+Date.now().toString(36),title:payload.title||m.title||'拾光',text:payload.poem,style,createdAt:new Date().toISOString(),model:payload.model||'glm-4.7-flash'};
     $('poemTitle').value=pending.title;
     $('poemBody').value=pending.text;
   }catch(error){
