@@ -1,5 +1,5 @@
 const ALLOWED_ORIGIN = "https://chenzhe223-tech.github.io";
-const MODEL = "glm-4-flash";
+const MODEL = "glm-4.7-flash";
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
