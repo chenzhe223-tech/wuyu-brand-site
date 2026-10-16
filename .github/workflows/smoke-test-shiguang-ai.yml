@@ -1,0 +1,59 @@
+name: Smoke Test SHIGUANG AI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "shiguang/worker/server.cjs"
+      - ".github/workflows/smoke-test-shiguang-ai.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for API and verify health
+        env:
+          API_BASE: https://shiguang-ai-api.onrender.com
+        run: |
+          for attempt in {1..12}; do
+            if curl --silent --show-error --fail "$API_BASE/health" -o /tmp/health.json; then
+              break
+            fi
+            if [ "$attempt" -eq 12 ]; then
+              echo "API health endpoint did not respond after retries."
+              exit 1
+            fi
+            sleep 5
+          done
+          node -e "const h=require('/tmp/health.json'); if(!h.ok || !h.keyConfigured) { console.error('Health check failed: API key is not configured or service is unhealthy.'); process.exit(1); } console.log('Health check passed; model='+h.model);"
+
+      - name: Generate one test poem through the live model
+        env:
+          API_BASE: https://shiguang-ai-api.onrender.com
+        run: |
+          node <<'NODE'
+          const base = process.env.API_BASE;
+          const response = await fetch(base + "/api/poem", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Origin": "https://chenzhe223-tech.github.io"
+            },
+            body: JSON.stringify({
+              title: "十月的清晨",
+              text: "清晨的阳光落在茶杯上，窗外树叶轻轻晃动，我停下来喝完了一杯茶。",
+              moods: ["平静"],
+              style: "natural"
+            })
+          });
+          const data = await response.json();
+          if (!response.ok || typeof data.poem !== "string" || !data.poem.trim()) {
+            console.error("Live AI poem generation failed. HTTP " + response.status + "; " + (data.error || "No poem returned"));
+            process.exit(1);
+          }
+          console.log("Live AI poem generation passed; model=" + (data.model || "unknown") + "; title=" + (data.title || "untitled"));
+          NODE
