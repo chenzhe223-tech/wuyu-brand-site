@@ -1,6 +1,10 @@
 const http = require("node:http");
+const fs = require("node:fs");
+const path = require("node:path");
 const PORT = Number(process.env.PORT || 8787);
 const ALLOWED_ORIGIN = "https://chenzhe223-tech.github.io";
+const ALLOWED_ORIGINS = new Set([ALLOWED_ORIGIN, "https://shiguang-ai-api.onrender.com"]);
+const APP_HTML_PATH = path.resolve(__dirname, "../index.html");
 const MODEL = "deepseek-flash";
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 10;
@@ -8,7 +12,6 @@ const buckets = new Map();
 
 function headers() {
   return {
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Access-Control-Max-Age": "86400",
@@ -70,12 +73,24 @@ function parsePoem(answer, originalTitle) {
 const server = http.createServer(async (req, res) => {
   const origin = req.headers.origin;
   const path = new URL(req.url, "http://localhost").pathname;
-  if (origin && origin !== ALLOWED_ORIGIN) {
+  if (origin && !ALLOWED_ORIGINS.has(origin)) {
     res.writeHead(403, { "Content-Type": "text/plain; charset=utf-8" });
     res.end("Forbidden");
     return;
   }
+  res.setHeader("Access-Control-Allow-Origin", origin && ALLOWED_ORIGINS.has(origin) ? origin : ALLOWED_ORIGIN);
   if (req.method === "OPTIONS") { res.writeHead(204, headers()); res.end(); return; }
+  if (req.method === "GET" && (path === "/" || path === "/shiguang" || path === "/shiguang/")) {
+    try {
+      const html = fs.readFileSync(APP_HTML_PATH);
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-cache" });
+      res.end(html);
+    } catch (error) {
+      console.error("Could not read SHIGUANG app HTML", error.message);
+      sendJson(res, 500, { error: "拾光页面暂时无法加载，请稍后重试。" });
+    }
+    return;
+  }
   if (req.method === "GET" && path === "/health") {
     sendJson(res, 200, { ok: true, service: "shiguang-ai-api", provider: "DeepSeek", model: MODEL, keyConfigured: Boolean(process.env.DEEPSEEK_API_KEY) });
     return;
