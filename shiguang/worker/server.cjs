@@ -1,7 +1,7 @@
 const http = require("node:http");
 const PORT = Number(process.env.PORT || 8787);
 const ALLOWED_ORIGIN = "https://chenzhe223-tech.github.io";
-const MODEL = "glm-4.7-flash";
+const MODEL = "deepseek-flash";
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_REQUESTS_PER_WINDOW = 10;
 const buckets = new Map();
@@ -77,12 +77,12 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === "OPTIONS") { res.writeHead(204, headers()); res.end(); return; }
   if (req.method === "GET" && path === "/health") {
-    sendJson(res, 200, { ok: true, service: "shiguang-ai-api", model: MODEL, keyConfigured: Boolean(process.env.BIGMODEL_API_KEY) });
+    sendJson(res, 200, { ok: true, service: "shiguang-ai-api", provider: "DeepSeek", model: MODEL, keyConfigured: Boolean(process.env.DEEPSEEK_API_KEY) });
     return;
   }
   if (req.method !== "POST" || path !== "/api/poem") { sendJson(res, 404, { error: "Not found" }); return; }
-  if (!process.env.BIGMODEL_API_KEY) {
-    sendJson(res, 503, { error: "AI 服务尚未配置密钥，请在后端环境变量中设置 BIGMODEL_API_KEY。" });
+  if (!process.env.DEEPSEEK_API_KEY) {
+    sendJson(res, 503, { error: "DeepSeek 服务尚未配置密钥，请在后端环境变量中设置 DEEPSEEK_API_KEY。" });
     return;
   }
   const ip = String(req.headers["x-real-ip"] || req.socket.remoteAddress || "unknown").slice(0, 100);
@@ -111,49 +111,34 @@ const server = http.createServer(async (req, res) => {
     "\n心情标签：" + (moods.join("、") || "未填写") + "\n生活记录：\n" + record +
     "\n\n请只输出严格 JSON 对象，不要 Markdown 代码块。格式为 {\"title\":\"不超过16字的诗题\",\"poem\":\"诗歌正文，换行使用\\\\n\"}。";
 
-  const requestModel = async (model) => fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-    method: "POST",
-    headers: { "Authorization": "Bearer " + process.env.BIGMODEL_API_KEY, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: "你是「拾光 SHIGUANG」的专属诗歌创作者。品牌内核：拾起时光，留住人间。尊重用户真实记忆，温柔、克制、有画面感。" },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.85,
-      top_p: 0.85,
-      max_tokens: 900,
-      stream: false
-    }),
-    signal: AbortSignal.timeout(45000)
-  });
-
   let upstream;
-  let activeModel = MODEL;
   try {
-    upstream = await requestModel(MODEL);
-    if (upstream.status === 429) {
-      let firstMessage = "";
-      try {
-        const firstError = await upstream.clone().json();
-        const detail = firstError && firstError.error ? firstError.error : firstError;
-        firstMessage = String((detail && (detail.message || detail.msg)) || "");
-      } catch {}
-      if (/当前访问量过大|访问量过大|temporarily overloaded|model overloaded|too many requests/i.test(firstMessage)) {
-        const fallbackModel = "glm-4-flash-250414";
-        const fallbackResponse = await requestModel(fallbackModel);
-        if (fallbackResponse.ok) {
-          upstream = fallbackResponse;
-          activeModel = fallbackModel;
-          console.warn("Primary model busy; poem generation succeeded with fallback model", fallbackModel);
-        } else {
-          upstream = fallbackResponse;
-          activeModel = fallbackModel;
-        }
-      }
-    }
+    upstream = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + process.env.DEEPSEEK_API_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          {
+            role: "system",
+            content: "你是「拾光 SHIGUANG」的专属诗歌创作者。品牌内核：拾起时光，留住人间。尊重用户真实记忆，温柔、克制、有画面感。请用简洁自然的中文创作，避免陈词滥调。"
+          },
+          { role: "user", content: prompt }
+        ],
+        thinking: { type: "disabled" },
+        response_format: { type: "json_object" },
+        temperature: 0.85,
+        top_p: 0.85,
+        max_tokens: 900,
+        stream: false
+      }),
+      signal: AbortSignal.timeout(45000)
+    });
   } catch {
-    sendJson(res, 502, { error: "暂时无法连接诗歌模型，请稍后重试。" });
+    sendJson(res, 502, { error: "暂时无法连接 DeepSeek，请稍后重试。" });
     return;
   }
 
@@ -166,15 +151,15 @@ const server = http.createServer(async (req, res) => {
       providerMessage = String((detail && (detail.message || detail.msg)) || "").slice(0, 220);
       providerCode = String((detail && (detail.code || detail.type)) || "").slice(0, 40);
     } catch {}
-    console.warn("BigModel API failure", JSON.stringify({ status: upstream.status, code: providerCode, message: providerMessage }));
+    console.warn("DeepSeek API failure", JSON.stringify({ status: upstream.status, code: providerCode, message: providerMessage }));
     if (upstream.status === 401 || upstream.status === 403) {
-      sendJson(res, 502, { error: "模型密钥无效或没有调用权限，请检查后端密钥配置。" });
+      sendJson(res, 502, { error: "DeepSeek API Key 无效或没有调用权限，请检查后端密钥配置。" });
     } else if (upstream.status === 429) {
       const detail = providerMessage ? " 模型服务提示：" + providerMessage : "";
-      sendJson(res, 429, { error: "模型服务繁忙、请求受限或账号可用额度不足，请稍后重试。" + detail });
+      sendJson(res, 429, { error: "DeepSeek 服务繁忙、请求受限或账号可用额度不足，请稍后重试。" + detail });
     } else {
       const detail = providerMessage ? " 模型服务提示：" + providerMessage : "";
-      sendJson(res, 502, { error: "模型暂时无法生成，请稍后重试。" + detail });
+      sendJson(res, 502, { error: "DeepSeek 暂时无法生成，请稍后重试。" + detail });
     }
     return;
   }
