@@ -26,4 +26,4 @@ The frontend sends only the record title, text, selected mood labels, and poem s
 
 ## Before public promotion
 
-CORS limits browser origins but is not authentication. Before inviting broad public traffic, add abuse controls such as Cloudflare rate limiting and usage monitoring to protect the model quota. Confirm the model name and account availability in the BigModel console if API errors indicate that `glm-4-flash` is unavailable.
+CORS limits browser origins but is not authentication. Before inviting broad public traffic, add abuse controls such as Cloudflare rate limiting and usage monitoring to protect the model quota. Confirm the model name and account availability in the BigModel console if API errors indicate that `glm-4.7-flash` is unavailable.
